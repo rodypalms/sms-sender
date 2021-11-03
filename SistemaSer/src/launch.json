@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Teste Ser",
+      "program": "${workspaceFolder}/index.js",
+      "envFile": "${workspaceFolder}/.env",
+      "outputCapture": "std",
+      "runtimeArgs": ["--max-old-space-size=4096"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "skipFiles": [
+        "${workspaceFolder}/node_modules/**/*.js",
+        "<node_internals>/**/*.js"
+      ]
+    }
+  ]
+}
