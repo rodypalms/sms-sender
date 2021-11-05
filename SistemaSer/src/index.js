@@ -8,7 +8,6 @@ const uuid = require('uuid/v4');
 
 // Configurações
 const CREDENTIALS = 'c2VyLmVkdWNhY2lvbmFsLmFjYzpZb2Q5azkyTXpi';
-const TELEFONE_ENVIO = '558181572941';
 const AGGREGATE_ID = '102560';
 const separator = ';';
 const breakLine = '\r\n';
@@ -28,7 +27,7 @@ const formatFile = (file, fileName) => {
   const lines = file.split(breakLine);
   const header = lines.shift().split(separator);
 
-  console.log(`Arquivo possui ${lines.length} registros`);
+  console.log(`Arquivo possui ${lines.length} registros de dados que serão usados`);
 
   const formats = [
     {
@@ -76,7 +75,6 @@ const formatFile = (file, fileName) => {
   ];
 
   const format = formats.find((item) => fileName.startsWith(item.format));
-  console.log(format);
 
   if (format && format.fields) {
     const { fields } = format;
@@ -121,7 +119,7 @@ const processFile = async (fileName) => {
   const list = await readContents(fileName);
   let enviados = 0;
   let erros = 0;
-
+  
   for (const item of list) {
     const { tipoArquivo } = item;
 
@@ -132,15 +130,17 @@ const processFile = async (fileName) => {
       const payload = formatPayload(item, item.marca, type || tipoArquivo);
 
       // chamar zenvia
+      console.log("PAYLOAD feito")
+  
       const success = await sendMessage(payload);
-      success ?  erros++ : enviados++;
+      success ?  enviados++ : erros++;
     } else {
-      console.log('Lead não receberá disparos');
+      console.log('Lead não receberá disparos \n ------------------- ');
     }
     
   }
 
-  console.log(`${enviados} mensagens enviadas e ${list.length - enviados} não entraram nas regras de envio`);
+  console.log(`${enviados} mensagens enviadas e ${list.length - enviados} não entraram nas regras de envio devido a matricula ativa`);
   console.log(`Resultados:
     Total: ${list.length}
     Enviados: ${enviados}
@@ -181,7 +181,6 @@ const checkRules = (type, lead) => {
 };
 
 const formatPayload = (data, marca, type) => {
-  let from = TELEFONE_ENVIO;
 
   const messages = [
     {
@@ -303,8 +302,7 @@ const formatPayload = (data, marca, type) => {
 
   const payload = {
     sendSmsRequest: {
-      from,
-      schedule: moment().add(1, 'minute').tz('America/Sao_Paulo').format(),
+      schedule: moment().add(2, 'minute').format('YYYY-MM-DDThh:mm:ss'),
       to: data.to.startsWith('55') ? data.to : `55${data.to}`,
       msg: match.message,
       callbackOption: 'NONE',
@@ -318,19 +316,22 @@ const formatPayload = (data, marca, type) => {
 
 const sendMessage = async (data) => {
   try {
+    console.log("ENVIAR NO AXIOS");
     const res = await axios({
       method: 'post',
       url: 'https://api-rest.zenvia.com/services/send-sms',
       headers: { 'content-type': 'application/json', Authorization: `Basic ${CREDENTIALS}` },
       data
     });
-    
-    if (res.data && res.data.statusCode) {
-      if (res.data.statusCode == '00') {
-        console.log('Mensagem enviada com sucesso', data.sendSmsRequest.to);
+
+    if (res.data && res.data.sendSmsResponse.statusCode) {
+      if (res.data.sendSmsResponse.statusCode == '00') {
+        console.log(`Mensagem enviada com sucesso \n -------------------`);
         return true;
       }
       return false;
+    } else { 
+      console.log("PRIMEIRO ELSE");
     }
   } catch (err) {
     console.log('Erro ao enviar mensagem', err);
