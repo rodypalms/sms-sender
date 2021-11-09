@@ -20,3 +20,10 @@ que denominará os padrões de envio (exemplo
 ## Segundo, rode o comando no git bash: 
 
  git pull
+
+ ou
+
+ git clone https://github.com/rodypalms/sms-sender.git 
+
+ este comando acima de clone faz com que o repositorio seja criado do zero, deve
+ ser executado numa pasta vazia
